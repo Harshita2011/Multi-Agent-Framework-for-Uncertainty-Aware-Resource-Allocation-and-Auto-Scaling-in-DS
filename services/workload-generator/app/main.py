@@ -5,7 +5,7 @@ from __future__ import annotations
 from fastapi import FastAPI
 from pydantic import BaseModel
 
-from generator import WorkloadGenerator
+from .generator import WorkloadGenerator
 
 
 class LoadResponse(BaseModel):
@@ -28,3 +28,4 @@ def create_app() -> FastAPI:
 
 
 app = create_app()
+
