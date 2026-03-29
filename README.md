@@ -9,6 +9,8 @@ Phase 1 delivers two FastAPI microservices:
 
 Phase 2 adds monitoring for `node-service` with Prometheus-compatible metrics and a starter Grafana dashboard.
 
+Phase 3 adds `prediction-service`, a lightweight recurrent forecasting API that returns both a prediction and an uncertainty score.
+
 ## Current Structure
 
 ```text
@@ -20,6 +22,13 @@ services/
 |       |-- metrics.py
 |       |-- routes.py
 |       \-- simulator.py
+|-- prediction-service/
+|   \-- app/
+|       |-- __init__.py
+|       |-- inference.py
+|       |-- main.py
+|       |-- model.py
+|       \-- routes.py
 |-- workload-generator/
 |   \-- app/
 |       |-- __init__.py
@@ -71,6 +80,13 @@ cd services\workload-generator
 uvicorn app.main:app --host 127.0.0.1 --port 8003
 ```
 
+Start `prediction-service`:
+
+```powershell
+cd services\prediction-service
+uvicorn app.main:app --host 127.0.0.1 --port 8004
+```
+
 ## API Endpoints
 
 Node metrics JSON:
@@ -117,6 +133,29 @@ Example response:
 }
 ```
 
+Prediction endpoint:
+
+```text
+POST /predict
+```
+
+Example request:
+
+```json
+{
+  "history": [0.5, 0.6, 0.7]
+}
+```
+
+Example response:
+
+```json
+{
+  "prediction": 0.79,
+  "uncertainty": 0.1
+}
+```
+
 ## Verify Phase 1
 
 Check both nodes:
@@ -145,8 +184,17 @@ Check that values change over time:
 Check the Prometheus scrape output:
 
 ```powershell
-Invoke-WebRequest http://127.0.0.1:8001/metrics/prometheus | Select-Object -ExpandProperty Content
-Invoke-WebRequest http://127.0.0.1:8002/metrics/prometheus | Select-Object -ExpandProperty Content
+Invoke-WebRequest -UseBasicParsing http://127.0.0.1:8001/metrics/prometheus | Select-Object -ExpandProperty Content
+Invoke-WebRequest -UseBasicParsing http://127.0.0.1:8002/metrics/prometheus | Select-Object -ExpandProperty Content
+```
+
+## Verify Phase 3
+
+Start `prediction-service`, then test an increasing and decreasing history:
+
+```powershell
+Invoke-RestMethod -Method Post -Uri http://127.0.0.1:8004/predict -ContentType "application/json" -Body '{"history":[0.5,0.6,0.7]}'
+Invoke-RestMethod -Method Post -Uri http://127.0.0.1:8004/predict -ContentType "application/json" -Body '{"history":[0.7,0.55,0.45,0.4]}'
 ```
 
 Phase 1 is considered valid when:
@@ -161,6 +209,12 @@ Phase 2 is considered valid when:
 - Prometheus successfully scrapes `/metrics/prometheus`
 - `cpu_usage` and `memory_usage` appear in Prometheus
 - the Grafana dashboard shows both metrics in real time
+
+Phase 3 is considered valid when:
+
+- `prediction-service` responds on `/predict`
+- increasing histories produce higher next-step predictions
+- uncertainty increases as input variation increases
 
 ## Prometheus Setup
 
