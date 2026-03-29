@@ -1,0 +1,379 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: node-service-1
+  namespace: ds-system
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: node-service-1
+  template:
+    metadata:
+      labels:
+        app: node-service-1
+    spec:
+      containers:
+        - name: node-service
+          image: node-service:latest
+          imagePullPolicy: IfNotPresent
+          env:
+            - name: NODE_ID
+              value: node-1
+          ports:
+            - containerPort: 8000
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: node-service-1
+  namespace: ds-system
+spec:
+  selector:
+    app: node-service-1
+  ports:
+    - port: 8000
+      targetPort: 8000
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: node-service-2
+  namespace: ds-system
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: node-service-2
+  template:
+    metadata:
+      labels:
+        app: node-service-2
+    spec:
+      containers:
+        - name: node-service
+          image: node-service:latest
+          imagePullPolicy: IfNotPresent
+          env:
+            - name: NODE_ID
+              value: node-2
+          ports:
+            - containerPort: 8000
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: node-service-2
+  namespace: ds-system
+spec:
+  selector:
+    app: node-service-2
+  ports:
+    - port: 8000
+      targetPort: 8000
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: workload-generator
+  namespace: ds-system
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: workload-generator
+  template:
+    metadata:
+      labels:
+        app: workload-generator
+    spec:
+      containers:
+        - name: workload-generator
+          image: workload-generator:latest
+          imagePullPolicy: IfNotPresent
+          ports:
+            - containerPort: 8000
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: workload-generator
+  namespace: ds-system
+spec:
+  selector:
+    app: workload-generator
+  ports:
+    - port: 8000
+      targetPort: 8000
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: prediction-service
+  namespace: ds-system
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: prediction-service
+  template:
+    metadata:
+      labels:
+        app: prediction-service
+    spec:
+      containers:
+        - name: prediction-service
+          image: prediction-service:latest
+          imagePullPolicy: IfNotPresent
+          ports:
+            - containerPort: 8000
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: prediction-service
+  namespace: ds-system
+spec:
+  selector:
+    app: prediction-service
+  ports:
+    - port: 8000
+      targetPort: 8000
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: risk-service
+  namespace: ds-system
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: risk-service
+  template:
+    metadata:
+      labels:
+        app: risk-service
+    spec:
+      containers:
+        - name: risk-service
+          image: risk-service:latest
+          imagePullPolicy: IfNotPresent
+          ports:
+            - containerPort: 8000
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: risk-service
+  namespace: ds-system
+spec:
+  selector:
+    app: risk-service
+  ports:
+    - port: 8000
+      targetPort: 8000
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: agent-service
+  namespace: ds-system
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: agent-service
+  template:
+    metadata:
+      labels:
+        app: agent-service
+    spec:
+      containers:
+        - name: agent-service
+          image: agent-service:latest
+          imagePullPolicy: IfNotPresent
+          ports:
+            - containerPort: 8000
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: agent-service
+  namespace: ds-system
+spec:
+  selector:
+    app: agent-service
+  ports:
+    - port: 8000
+      targetPort: 8000
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: resource-service
+  namespace: ds-system
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: resource-service
+  template:
+    metadata:
+      labels:
+        app: resource-service
+    spec:
+      containers:
+        - name: resource-service
+          image: resource-service:latest
+          imagePullPolicy: IfNotPresent
+          ports:
+            - containerPort: 8000
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: resource-service
+  namespace: ds-system
+spec:
+  selector:
+    app: resource-service
+  ports:
+    - port: 8000
+      targetPort: 8000
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: allocation-service
+  namespace: ds-system
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: allocation-service
+  template:
+    metadata:
+      labels:
+        app: allocation-service
+    spec:
+      containers:
+        - name: allocation-service
+          image: allocation-service:latest
+          imagePullPolicy: IfNotPresent
+          ports:
+            - containerPort: 8000
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: allocation-service
+  namespace: ds-system
+spec:
+  selector:
+    app: allocation-service
+  ports:
+    - port: 8000
+      targetPort: 8000
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: coordinator-service
+  namespace: ds-system
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: coordinator-service
+  template:
+    metadata:
+      labels:
+        app: coordinator-service
+    spec:
+      containers:
+        - name: coordinator-service
+          image: coordinator-service:latest
+          imagePullPolicy: IfNotPresent
+          ports:
+            - containerPort: 8000
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: coordinator-service
+  namespace: ds-system
+spec:
+  selector:
+    app: coordinator-service
+  ports:
+    - port: 8000
+      targetPort: 8000
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: execution-service
+  namespace: ds-system
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: execution-service
+  template:
+    metadata:
+      labels:
+        app: execution-service
+    spec:
+      containers:
+        - name: execution-service
+          image: execution-service:latest
+          imagePullPolicy: IfNotPresent
+          ports:
+            - containerPort: 8000
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: execution-service
+  namespace: ds-system
+spec:
+  selector:
+    app: execution-service
+  ports:
+    - port: 8000
+      targetPort: 8000
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: evaluation-service
+  namespace: ds-system
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: evaluation-service
+  template:
+    metadata:
+      labels:
+        app: evaluation-service
+    spec:
+      containers:
+        - name: evaluation-service
+          image: evaluation-service:latest
+          imagePullPolicy: IfNotPresent
+          ports:
+            - containerPort: 8000
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: evaluation-service
+  namespace: ds-system
+spec:
+  selector:
+    app: evaluation-service
+  ports:
+    - port: 8000
+      targetPort: 8000

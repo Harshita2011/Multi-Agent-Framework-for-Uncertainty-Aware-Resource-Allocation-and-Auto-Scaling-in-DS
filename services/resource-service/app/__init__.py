@@ -1,0 +1,1 @@
+"""Resource service application package."""

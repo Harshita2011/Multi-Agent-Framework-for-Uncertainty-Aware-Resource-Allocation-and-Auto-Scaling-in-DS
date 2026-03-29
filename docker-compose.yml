@@ -1,0 +1,102 @@
+services:
+  node-service-1:
+    build:
+      context: .
+      dockerfile: services/node-service/Dockerfile
+    environment:
+      NODE_ID: node-1
+    ports:
+      - "8001:8000"
+
+  node-service-2:
+    build:
+      context: .
+      dockerfile: services/node-service/Dockerfile
+    environment:
+      NODE_ID: node-2
+    ports:
+      - "8002:8000"
+
+  workload-generator:
+    build:
+      context: .
+      dockerfile: services/workload-generator/Dockerfile
+    ports:
+      - "8003:8000"
+
+  prediction-service:
+    build:
+      context: .
+      dockerfile: services/prediction-service/Dockerfile
+    ports:
+      - "8004:8000"
+
+  risk-service:
+    build:
+      context: .
+      dockerfile: services/risk-service/Dockerfile
+    ports:
+      - "8005:8000"
+
+  agent-service:
+    build:
+      context: .
+      dockerfile: services/agent-service/Dockerfile
+    ports:
+      - "8006:8000"
+
+  resource-service:
+    build:
+      context: .
+      dockerfile: services/resource-service/Dockerfile
+    ports:
+      - "8007:8000"
+
+  allocation-service:
+    build:
+      context: .
+      dockerfile: services/allocation-service/Dockerfile
+    ports:
+      - "8008:8000"
+
+  coordinator-service:
+    build:
+      context: .
+      dockerfile: services/coordinator-service/Dockerfile
+    ports:
+      - "8009:8000"
+
+  execution-service:
+    build:
+      context: .
+      dockerfile: services/execution-service/Dockerfile
+    ports:
+      - "8010:8000"
+
+  evaluation-service:
+    build:
+      context: .
+      dockerfile: services/evaluation-service/Dockerfile
+    ports:
+      - "8011:8000"
+
+  prometheus:
+    image: prom/prometheus:latest
+    volumes:
+      - ./infra/prometheus/prometheus.yml:/etc/prometheus/prometheus.yml:ro
+    ports:
+      - "9090:9090"
+    depends_on:
+      - node-service-1
+      - node-service-2
+
+  grafana:
+    image: grafana/grafana:latest
+    volumes:
+      - ./infra/grafana/provisioning/datasources:/etc/grafana/provisioning/datasources:ro
+      - ./infra/grafana/provisioning/dashboards:/etc/grafana/provisioning/dashboards:ro
+      - ./infra/grafana/dashboards:/var/lib/grafana/dashboards:ro
+    ports:
+      - "3000:3000"
+    depends_on:
+      - prometheus
