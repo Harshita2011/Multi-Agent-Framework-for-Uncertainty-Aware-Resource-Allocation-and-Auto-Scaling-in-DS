@@ -1,0 +1,24 @@
+experiment_name: reactive-baseline-long
+timesteps: 20
+step_sleep_seconds: 0.05
+policy: reactive
+target_nodes:
+  - node-1
+  - node-2
+history_seed:
+  - 0.45
+  - 0.52
+  - 0.58
+workload_mode: baseline
+workload_source: generated
+trace_seed: 20260331
+risk_inputs:
+  cpu_source: average
+  memory_source: average
+  uncertainty_source: prediction
+summary_metrics:
+  - final_rmse
+  - average_utilization
+  - action_counts
+  - average_prediction
+  - average_risk

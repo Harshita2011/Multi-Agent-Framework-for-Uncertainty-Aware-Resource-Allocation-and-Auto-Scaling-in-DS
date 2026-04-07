@@ -1,0 +1,23 @@
+experiment_name: bursty-high-load
+timesteps: 3
+step_sleep_seconds: 0.2
+target_nodes:
+  - node-1
+  - node-2
+history_seed:
+  - 0.92
+  - 0.96
+  - 0.99
+workload_mode: bursty-high-load
+workload_source: generated
+trace_seed: 20260331
+risk_inputs:
+  cpu_source: max
+  memory_source: max
+  uncertainty_source: prediction
+summary_metrics:
+  - final_rmse
+  - average_utilization
+  - action_counts
+  - average_prediction
+  - average_risk

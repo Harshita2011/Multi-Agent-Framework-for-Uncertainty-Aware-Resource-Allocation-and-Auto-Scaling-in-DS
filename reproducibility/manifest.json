@@ -1,0 +1,98 @@
+{
+  "generated_at": "2026-04-07T17:08:42.292257+00:00",
+  "python_version": "3.11.0 (main, Oct 24 2022, 18:26:48) [MSC v.1933 64 bit (AMD64)]",
+  "platform": "Windows-10-10.0.26200-SP0",
+  "git_commit": "24f4c263c879be74b752208f226622044e998dca",
+  "git_status_short": [
+    "M .gitignore",
+    " M README.md",
+    " M requirements.txt",
+    " M services/coordinator-service/app/engine.py",
+    "?? PROJECT.md",
+    "?? PROJECT_PAPER.md",
+    "?? PROJECT_PRESENTATION.md",
+    "?? RESULTS.md",
+    "?? experiments/",
+    "?? paper/"
+  ],
+  "commands": {
+    "single_run": "python experiments/run_experiment.py --name <name> --config <config-path>",
+    "batch_run": "python experiments/run_batch.py --batch-name <name> --runs-per-scenario <n>",
+    "conference_suite": "python experiments/run_batch.py --batch-name conf-suite --runs-per-scenario 30 --scenario proposed=experiments/configs/proposed_baseline_long.yaml --scenario threshold=experiments/configs/threshold_baseline_long.yaml --scenario reactive=experiments/configs/reactive_baseline_long.yaml --scenario hpa=experiments/configs/hpa_like_baseline_long.yaml --scenario predictive=experiments/configs/predictive_only_baseline_long.yaml --scenario no-risk=experiments/configs/ablation_no_risk_baseline_long.yaml --scenario no-uncertainty=experiments/configs/ablation_no_uncertainty_baseline_long.yaml --scenario no-agents=experiments/configs/ablation_no_agents_baseline_long.yaml"
+  },
+  "configs": [
+    {
+      "path": "experiments\\configs\\proposed_baseline_long.yaml",
+      "content": {
+        "experiment_name": "proposed-baseline-long",
+        "timesteps": 20,
+        "step_sleep_seconds": 0.05,
+        "policy": "proposed",
+        "target_nodes": [
+          "node-1",
+          "node-2"
+        ],
+        "history_seed": [
+          0.45,
+          0.52,
+          0.58
+        ],
+        "workload_mode": "baseline",
+        "workload_source": "generated",
+        "trace_seed": 20260331,
+        "risk_inputs": {
+          "cpu_source": "average",
+          "memory_source": "average",
+          "uncertainty_source": "prediction"
+        },
+        "summary_metrics": [
+          "final_rmse",
+          "average_utilization",
+          "action_counts",
+          "average_prediction",
+          "average_risk"
+        ]
+      }
+    },
+    {
+      "path": "experiments\\configs\\replay_trace_long.yaml",
+      "content": {
+        "experiment_name": "replay-trace-proposed-long",
+        "timesteps": 20,
+        "step_sleep_seconds": 0.05,
+        "policy": "proposed",
+        "target_nodes": [
+          "node-1",
+          "node-2"
+        ],
+        "history_seed": [
+          0.52,
+          0.49,
+          0.55
+        ],
+        "workload_mode": "baseline",
+        "workload_source": "replay",
+        "workload_trace_path": "../traces/trace_replay_sample.csv",
+        "trace_seed": 20260331,
+        "risk_inputs": {
+          "cpu_source": "average",
+          "memory_source": "average",
+          "uncertainty_source": "prediction"
+        },
+        "summary_metrics": [
+          "final_rmse",
+          "average_utilization",
+          "action_counts",
+          "average_prediction",
+          "average_risk",
+          "p95_utilization",
+          "sla_violation_rate",
+          "control_loop_latency_ms",
+          "throughput_proxy",
+          "cost_proxy",
+          "action_churn_rate"
+        ]
+      }
+    }
+  ]
+}

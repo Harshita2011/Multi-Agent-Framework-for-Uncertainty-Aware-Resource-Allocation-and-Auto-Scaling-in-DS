@@ -19,7 +19,7 @@ class CoordinatorEngine:
     def decide(self, inputs: DecisionInputs) -> str:
         """Return a logical action for the current operating state."""
 
-        if inputs.prediction >= 0.7 and inputs.risk >= 0.5:
+        if inputs.prediction >= 0.6 and inputs.risk >= 0.4:
             return "scale_up"
         if inputs.prediction <= 0.35 and inputs.risk <= 0.4:
             return "scale_down"

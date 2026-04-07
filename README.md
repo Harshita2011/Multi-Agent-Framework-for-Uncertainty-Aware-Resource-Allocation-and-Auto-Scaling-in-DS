@@ -29,6 +29,8 @@ Phase 11 adds Docker support for every service plus a `docker-compose.yml` that 
 
 Phase 12 adds Kubernetes manifests under `infra/k8s/` for the application services, Prometheus, and Grafana.
 
+The recommended research-grade workflow is Docker-first and now includes a unified experiment runner that persists reproducible results under `results/`.
+
 ## Current Structure
 
 ```text
@@ -70,6 +72,22 @@ services/
 |       |-- executor.py
 |       |-- main.py
 |       \-- routes.py
+|-- experiments/
+|   |-- configs/
+|   |   |-- baseline.yaml
+|   |   |-- bursty_high_load.yaml
+|   |   |-- mixed_low_load.yaml
+|   |   |-- proposed_baseline_long.yaml
+|   |   |-- threshold_baseline_long.yaml
+|   |   |-- reactive_baseline_long.yaml
+|   |   |-- proposed_bursty_long.yaml
+|   |   \-- proposed_mixed_long.yaml
+|   |-- __init__.py
+|   |-- config_loader.py
+|   |-- orchestrator.py
+|   |-- reporting.py
+|   |-- run_batch.py
+|   \-- run_experiment.py
 |-- infra/
 |   |-- grafana/
 |   |   |-- dashboards/
@@ -130,9 +148,17 @@ Docker files added in Phase 11:
 - root [docker-compose.yml](d:/DS1/Multi-Agent-Framework-for-Uncertainty-Aware-Resource-Allocation-and-Auto-Scaling-in-DS/docker-compose.yml)
 - root [requirements.txt](d:/DS1/Multi-Agent-Framework-for-Uncertainty-Aware-Resource-Allocation-and-Auto-Scaling-in-DS/requirements.txt)
 
+The experiment runner requires:
+
+```powershell
+pip install -r requirements.txt
+```
+
 ## Run Services
 
 Open separate terminals from the repository root.
+
+For research runs, prefer the Docker Compose workflow below instead of starting each service manually.
 
 Start `node-service` as `node-1`:
 
@@ -614,14 +640,188 @@ Phase 12 is considered valid when:
 - app services and observability components have clean manifests
 - pods can be created successfully from the manifests
 
+## Research Experiments
+
+Start the full stack with Docker:
+
+```powershell
+docker compose up --build -d
+```
+
+Run a named experiment:
+
+```powershell
+python experiments/run_experiment.py --name baseline-study --config experiments/configs/baseline.yaml
+```
+
+Run a repeated comparison batch:
+
+```powershell
+python experiments/run_batch.py --batch-name paper-batch --runs-per-scenario 3
+```
+
+For stronger statistical evidence, use 10-30 runs per scenario:
+
+```powershell
+python experiments/run_batch.py --batch-name paper-batch-10 --runs-per-scenario 10
+```
+
+You can also restrict the batch to selected scenarios:
+
+```powershell
+python experiments/run_batch.py --batch-name focused-batch --runs-per-scenario 5 --scenario baseline=experiments/configs/baseline.yaml --scenario bursty=experiments/configs/bursty_high_load.yaml
+```
+
+Policy comparison baselines:
+
+- `proposed`: uses the prediction and risk-aware decision path
+- `threshold`: uses direct CPU and workload thresholds
+- `reactive`: uses short-term workload change and utilization
+- `hpa-like`: CPU-threshold baseline similar to HPA-style behavior
+- `predictive-only`: forecast-only baseline without explicit risk integration
+
+Ablation policies:
+
+- `proposed-no-risk`: removes risk contribution from proposed decisioning
+- `proposed-no-uncertainty`: disables uncertainty in risk input
+- `proposed-no-agents`: neutralizes agent utility contribution
+
+Example baseline-policy comparison:
+
+```powershell
+python experiments/run_batch.py --batch-name policy-compare --runs-per-scenario 10 --scenario proposed=experiments/configs/proposed_baseline_long.yaml --scenario threshold=experiments/configs/threshold_baseline_long.yaml --scenario reactive=experiments/configs/reactive_baseline_long.yaml
+```
+
+Trace replay example:
+
+```powershell
+python experiments/run_experiment.py --name replay-trace --config experiments/configs/replay_trace_long.yaml
+```
+
+Conference-grade ablation + baseline breadth example:
+
+```powershell
+python experiments/run_batch.py --batch-name conf-suite --runs-per-scenario 30 `
+  --scenario proposed=experiments/configs/proposed_baseline_long.yaml `
+  --scenario threshold=experiments/configs/threshold_baseline_long.yaml `
+  --scenario reactive=experiments/configs/reactive_baseline_long.yaml `
+  --scenario hpa=experiments/configs/hpa_like_baseline_long.yaml `
+  --scenario predictive=experiments/configs/predictive_only_baseline_long.yaml `
+  --scenario no-risk=experiments/configs/ablation_no_risk_baseline_long.yaml `
+  --scenario no-uncertainty=experiments/configs/ablation_no_uncertainty_baseline_long.yaml `
+  --scenario no-agents=experiments/configs/ablation_no_agents_baseline_long.yaml
+```
+
+One-command publication suite:
+
+```powershell
+python experiments/run_publication_suite.py --batch-name publication-suite --runs-per-scenario 30
+```
+
+Export latest batch into `paper/artifacts/` for manuscript integration:
+
+```powershell
+python experiments/export_publication_artifacts.py --batch-name publication-suite
+```
+
+Build a reproducibility package (env lock + manifest + exact commands):
+
+```powershell
+python experiments/build_repro_package.py --output-dir reproducibility --include-config experiments/configs/proposed_baseline_long.yaml --include-config experiments/configs/replay_trace_long.yaml
+```
+
+The runner automatically:
+
+- checks Docker and `docker compose` availability
+- verifies the stack is already running
+- restarts the app services to reset in-memory state before each run
+- supports deterministic generated traces or replayed traces through config fields such as `workload_source`, `trace_seed`, and `workload_trace`
+- supports trace file replay via `workload_trace_path` (`.csv`, `.json`, `.yaml`)
+- blocks overlapping experiment runs with a lock file so results stay reproducible
+- captures per-run provenance including config digests, Python/platform metadata, and Git commit status
+
+Additional ready-made scenarios:
+
+```powershell
+python experiments/run_experiment.py --name bursty-study --config experiments/configs/bursty_high_load.yaml
+python experiments/run_experiment.py --name mixed-study --config experiments/configs/mixed_low_load.yaml
+```
+
+Results are written to:
+
+```text
+results/<experiment-name>/<timestamp>/
+```
+
+Each run persists:
+
+- `config.yaml`
+- `step_logs.csv`
+- `step_logs.jsonl`
+- `summary.json`
+- `run.log`
+- `provenance.json`
+- `workload_trace.json`
+
+Batch runs also write a comparison bundle to:
+
+```text
+results/<batch-name>/<timestamp>/
+```
+
+Each batch persists:
+
+- `aggregate_summary.json`
+- `aggregate_table.csv`
+- `aggregate_table.md`
+- `aggregate_table.tex`
+- `paper_summary.md`
+- `batch.log`
+- `step_metrics.svg`
+- `pairwise_comparisons.json`
+- `pairwise_comparisons.md`
+
+Publication-quality statistical reporting notes:
+
+- pairwise tests include permutation p-values
+- p-values are Holm-Bonferroni corrected for multiple comparisons
+- effect sizes include Cliff's delta with qualitative magnitude labels
+- bootstrap confidence intervals are preserved for mean differences
+
+Validation expectations for a successful research run:
+
+- `docker compose up --build -d` succeeds
+- the runner reaches all required service endpoints before timestep execution
+- the experiment completes with `status: success` in `summary.json`
+- all result artifacts are written under `results/<experiment-name>/<timestamp>/`
+- repeated runs with the same experiment name create a new timestamped subdirectory instead of overwriting prior runs
+
+Validation expectations for a stronger paper-style batch run:
+
+- `python experiments/run_batch.py --batch-name <name> --runs-per-scenario <n>` completes successfully
+- every scenario has at least one successful run in `aggregate_summary.json`
+- `aggregate_table.md` and `aggregate_table.tex` are generated for direct reuse in reports
+- `step_metrics.svg` is generated from the per-run step logs
+- `pairwise_comparisons.json` and `pairwise_comparisons.md` are generated with bootstrap intervals, Cliff's delta, and permutation p-values
+- aggregate outputs include richer metrics such as `p95_utilization`, `sla_violation_rate`, `control_loop_latency_ms`, `throughput_proxy`, `cost_proxy`, and `action_churn_rate`
+- the comparison table shows measurable differences between scenarios or policies such as prediction, utilization, risk, action counts, or confidence intervals
+
+If a run fails partway through, the runner writes partial logs and a failed `summary.json` with the failure reason.
+
+`workload_mode` is not just a label:
+
+- `baseline` keeps the observed workload as-is
+- `bursty-high-load` shapes the observed workload into a higher-pressure scenario
+- `mixed-low-load` shapes it into a lighter mixed scenario
+
 ## Prometheus Setup
 
 The Prometheus configuration is stored at `infra/prometheus/prometheus.yml`.
 
 It is configured to scrape:
 
-- `host.docker.internal:8001`
-- `host.docker.internal:8002`
+- `node-service-1:8000`
+- `node-service-2:8000`
 
 If you run Prometheus directly on Windows instead of Docker, replace those targets with:
 

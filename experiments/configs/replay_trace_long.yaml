@@ -1,0 +1,31 @@
+experiment_name: replay-trace-proposed-long
+timesteps: 20
+step_sleep_seconds: 0.05
+policy: proposed
+target_nodes:
+  - node-1
+  - node-2
+history_seed:
+  - 0.52
+  - 0.49
+  - 0.55
+workload_mode: baseline
+workload_source: replay
+workload_trace_path: ../traces/trace_replay_sample.csv
+trace_seed: 20260331
+risk_inputs:
+  cpu_source: average
+  memory_source: average
+  uncertainty_source: prediction
+summary_metrics:
+  - final_rmse
+  - average_utilization
+  - action_counts
+  - average_prediction
+  - average_risk
+  - p95_utilization
+  - sla_violation_rate
+  - control_loop_latency_ms
+  - throughput_proxy
+  - cost_proxy
+  - action_churn_rate
